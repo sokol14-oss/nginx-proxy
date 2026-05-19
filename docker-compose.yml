@@ -1,0 +1,42 @@
+services:
+
+  app:
+    build: .
+    image: my-python-app
+    container_name: test-app-script
+    networks:
+      - proxy-net
+
+  nginx3:
+    image: nginx:alpine
+    volumes:
+      - ./conf/nginx3.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - proxy-net
+
+  # Второй Nginx
+  nginx2:
+    image: nginx:alpine
+    volumes:
+      - ./conf/nginx2.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - nginx3
+    networks:
+      - proxy-net
+
+  # Первый Nginx (смотрит в интернет на порт 8080)
+  nginx1:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./conf/nginx1.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - nginx2
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
